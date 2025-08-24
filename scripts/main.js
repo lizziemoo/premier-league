@@ -166,6 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = document.getElementById('main-league-title');
             logo.src = leagueLogos[currentLeague].src;
             logo.alt = leagueLogos[currentLeague].alt;
+            // Clear the heading and set only the correct league name
+            title.textContent = '';
             title.textContent = leagueTitles[currentLeague];
             document.getElementById('league-table').style.display = '';
             document.getElementById('scores-container').innerHTML = '';
