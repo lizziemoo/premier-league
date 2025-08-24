@@ -1,14 +1,3 @@
-premier-league-live
-├── src
-│   ├── index.html          # Main HTML document for the webpage
-│   ├── styles
-│   │   └── main.css       # CSS styles implementing a dark mode color scheme
-│   ├── scripts
-│   │   └── main.js        # JavaScript code for fetching live updates from the API
-│   └── assets             # Directory for additional assets (images/icons)
-├── package.json           # Configuration file for npm dependencies
-└── README.md              # Documentation for the project
-
 
 # Premier League Live (Synthwave Edition)
 
@@ -19,16 +8,7 @@ This project is a visually modern, synthwave-inspired web application that provi
 - Neon synthwave color palette and responsive card-based UI
 - League logos in navigation and headings
 
-premier-league
-├── index.html            # Main HTML document for the webpage
-├── styles/
-│   └── main.css          # CSS styles implementing a dark mode color scheme
-├── scripts/
-│   └── main.js           # JavaScript code for fetching live updates from the backend API
-├── server.js             # Node.js backend proxy for football-data.org API
-├── package.json          # Configuration file for npm dependencies
-├── .env                  # (Not committed) API key for football-data.org
-└── README.md             # Documentation for the project
+
 
 ## Project Structure
 
