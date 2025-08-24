@@ -1,0 +1,80 @@
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.header {
+    text-align: center;
+    padding: 20px;
+    background-color: #1e1e1e;
+}
+
+.main {
+    display: flex;
+    flex: 1;
+}
+
+.scores {
+    flex: 2;
+    padding: 20px;
+    background-color: #1e1e1e;
+    border-right: 1px solid #333;
+}
+
+.league-table {
+    flex: 1;
+    padding: 20px;
+    background-color: #1e1e1e;
+}
+
+.additional-info {
+    padding: 20px;
+    background-color: #1e1e1e;
+}
+
+h1, h2, h3 {
+    margin: 0;
+}
+
+.score {
+    margin: 10px 0;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+}
+
+.table th {
+    background-color: #333;
+}
+
+.table tr:hover {
+    background-color: #444;
+}
+
+@media (max-width: 768px) {
+    .main {
+        flex-direction: column;
+    }
+
+    .scores, .league-table {
+        border-right: none;
+        border-bottom: 1px solid #333;
+    }
+}
