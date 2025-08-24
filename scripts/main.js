@@ -2,12 +2,19 @@
 // It fetches live updates for matches and league standings, and updates the DOM.
 
 
+
 async function fetchLiveMatches() {
     try {
         const response = await fetch('https://premier-league-live-ish.onrender.com/api/matches');
         const data = await response.json();
-        displayLiveMatches(data.matches);
-        displayLastGoalOrFixtures(data.matches);
+        const liveMatches = (data.matches || []).filter(m => m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED');
+        if (liveMatches.length > 0) {
+            displayLiveMatches(liveMatches);
+        } else {
+            // No live matches, show recent results
+            fetchRecentResults();
+        }
+        displayLastGoalOrFixtures(liveMatches);
     } catch (error) {
         console.error('Error fetching live matches:', error);
     }
@@ -32,6 +39,41 @@ function displayLiveMatches(matches) {
             <p>${score}</p>
             <p>Goals: ${match.score.fullTime.home > 0 ? match.homeTeam.name + ' ' + match.score.fullTime.home : ''} ${match.score.fullTime.away > 0 ? match.awayTeam.name + ' ' + match.score.fullTime.away : ''}</p>
             <p>Status: ${match.status}</p>
+        `;
+        scoresContainer.appendChild(matchElement);
+    });
+}
+
+async function fetchRecentResults() {
+    // Fetch all matches and filter for recently finished ones
+    try {
+        const response = await fetch('https://premier-league-live-ish.onrender.com/api/matches');
+        const data = await response.json();
+        const finished = (data.matches || []).filter(m => m.status === 'FINISHED');
+        // Sort by most recent
+        finished.sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate));
+        displayRecentResults(finished.slice(0, 5));
+    } catch (error) {
+        const scoresContainer = document.getElementById('scores-container');
+        scoresContainer.innerHTML = '<p>Could not load recent results.</p>';
+    }
+}
+
+function displayRecentResults(matches) {
+    const scoresContainer = document.getElementById('scores-container');
+    scoresContainer.innerHTML = '<h3>Recent Results</h3>';
+    if (!matches || matches.length === 0) {
+        scoresContainer.innerHTML += '<p>No recent results found.</p>';
+        return;
+    }
+    matches.forEach(match => {
+        const matchElement = document.createElement('div');
+        matchElement.classList.add('match');
+        const score = `${match.homeTeam.name} ${match.score.fullTime.home} - ${match.score.fullTime.away} ${match.awayTeam.name}`;
+        matchElement.innerHTML = `
+            <h4>${match.homeTeam.name} vs ${match.awayTeam.name}</h4>
+            <p>${score}</p>
+            <p>Date: ${match.utcDate ? new Date(match.utcDate).toLocaleString() : ''}</p>
         `;
         scoresContainer.appendChild(matchElement);
     });
