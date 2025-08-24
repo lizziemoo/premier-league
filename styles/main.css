@@ -6,75 +6,97 @@ body {
     padding: 0;
 }
 
-.container {
+.pl-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    min-height: 100vh;
 }
 
-.header {
+.pl-header {
     text-align: center;
     padding: 20px;
     background-color: #1e1e1e;
 }
 
-.main {
-    display: flex;
-    flex: 1;
-}
-
-.scores {
-    flex: 2;
-    padding: 20px;
-    background-color: #1e1e1e;
-    border-right: 1px solid #333;
-}
-
-.league-table {
+.pl-main {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 20px;
     flex: 1;
     padding: 20px;
-    background-color: #1e1e1e;
 }
 
-.additional-info {
-    padding: 20px;
+.pl-scores {
     background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.pl-last-goal {
+    background-color: #232323;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.pl-league-table {
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.pl-footer {
+    background-color: #181818;
+    padding: 20px;
+    border-top: 1px solid #333;
+}
+
+#additional-info {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 h1, h2, h3 {
-    margin: 0;
+    margin: 0 0 10px 0;
 }
 
-.score {
+.match {
     margin: 10px 0;
+    padding: 10px;
+    background: #222;
+    border-radius: 6px;
 }
 
-.table {
+#table-container {
     width: 100%;
     border-collapse: collapse;
 }
-
-.table th, .table td {
-    padding: 10px;
+#table-container th, #table-container td {
+    padding: 8px 10px;
     text-align: left;
     border-bottom: 1px solid #333;
 }
-
-.table th {
+#table-container th {
     background-color: #333;
 }
-
-.table tr:hover {
+#table-container tr:hover {
     background-color: #444;
 }
 
-@media (max-width: 768px) {
-    .main {
-        flex-direction: column;
+@media (max-width: 900px) {
+    .pl-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
     }
-
-    .scores, .league-table {
-        border-right: none;
-        border-bottom: 1px solid #333;
+    .pl-scores, .pl-last-goal, .pl-league-table {
+        grid-column: 1;
+        grid-row: auto;
     }
 }
