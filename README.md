@@ -25,14 +25,74 @@ premier-league-live
    cd premier-league-live
    ```
 
-2. **Install dependencies**:
+2. **Install dependencies**:// ...existing code...
+
+// TODO: Move API key to a secure location before deploying or sharing your code!
+const API_KEY = '49925a6d517b4721ac4e5d9341193a48';
+
+// Example usage in a fetch request:
+fetch('https://api.football-data.org/v2/competitions/PL/matches', {
+    headers: { 'X-Auth-Token': API_KEY }
+})
+.then(response => response.json())
+.then(data => {
+    // Handle the data
+})
+.catch(error => {
+    console.error('Error fetching data:', error);
+});
+
+// ...existing code...// ...existing code...
+
+// TODO: Move API key to a secure location before deploying or sharing your code!
+const API_KEY = '49925a6d517b4721ac4e5d9341193a48';
+
+// Example usage in a fetch request:
+fetch('https://api.football-data.org/v2/competitions/PL/matches', {
+    headers: { 'X-Auth-Token': API_KEY }
+})
+.then(response => response.json())
+.then(data => {
+    // Handle the data
+})
+.catch(error => {
+    console.error('Error fetching data:', error);
+});
+
+// ...existing code...
    Make sure you have Node.js installed. Then run:
    ```bash
    npm install
    ```
 
 3. **API Key**:
-   Sign up at [football-data.org](https://www.football-data.org/) to get your API key. You will need to include this key in your JavaScript code to fetch data.
+   Sign up at [football-data.org](https://www.football-data.org/) to get your API key.
+
+    **For security, do not hardcode your API key in your source files.**
+   
+   1. Create a file named `.env` in the project root (this file should **NOT** be committed to version control).
+   2. Add your API key to the `.env` file like this:
+      ```
+      FOOTBALL_DATA_API_KEY=your_api_key_here
+      ```
+   3. Install the [`dotenv`](https://www.npmjs.com/package/dotenv) package:
+      ```bash
+      npm install dotenv
+      ```
+   4. At the top of your Node.js entry file (e.g., `main.js`), add:
+      ```javascript
+      require('dotenv').config();
+      const apiKey = process.env.FOOTBALL_DATA_API_KEY;
+      ```
+   5. Use `apiKey` in your API requests.
+   
+   If you are using only client-side JavaScript, consider setting up a simple backend proxy to keep your API key secret.
+   
+   **Add `.env` to your `.gitignore` file:**
+   ```
+   # .gitignore
+   .env
+   ```
 
 4. **Run the application**:
    Open `src/index.html` in your web browser to view the live updates.

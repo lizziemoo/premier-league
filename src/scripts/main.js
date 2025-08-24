@@ -2,14 +2,16 @@
 // It fetches live updates for matches, scores, goal scorers, and league standings. 
 // It also handles real-time updates and DOM manipulation to display the latest information.
 
-const apiKey = 'YOUR_API_KEY'; // Replace with your actual API key
+require('dotenv').config();
+const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
+
 const baseUrl = 'https://api.football-data.org/v2/';
 
 async function fetchLiveMatches() {
     try {
         const response = await fetch(`${baseUrl}matches`, {
             headers: {
-                'X-Auth-Token': apiKey
+                'X-Auth-Token': API_KEY
             }
         });
         const data = await response.json();
@@ -42,7 +44,7 @@ async function fetchLeagueTable() {
     try {
         const response = await fetch(`${baseUrl}competitions/PL/standings`, {
             headers: {
-                'X-Auth-Token': apiKey
+                'X-Auth-Token': API_KEY
             }
         });
         const data = await response.json();
@@ -76,3 +78,37 @@ function updateData() {
 updateData();
 // Set interval for real-time updates
 setInterval(updateData, 30000); // Update every 30 seconds
+
+// Example usage in a fetch request:
+fetch('https://api.football-data.org/v2/competitions/PL/matches', {
+    headers: { 'X-Auth-Token': API_KEY }
+})
+.then(response => response.json())
+.then(data => {
+    // Handle the data
+})
+.catch(error => {
+    console.error('Error fetching data:', error);
+});
+
+// Example for matches:
+fetch('https://premier-league-2yfh.onrender.com/api/matches')
+    .then(response => response.json())
+    .then(data => {
+        // Handle the data
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+// Example for standings:
+fetch('https://premier-league-2yfh.onrender.com/api/standings')
+    .then(response => response.json())
+    .then(data => {
+        // Handle the data
+    })
+    .catch(error => {
+        console.error('Error fetching data:', error);
+    });
+
+// Server file location: C:\Users\lizzi\Documents\Webpage\premier-league-live\server.js
