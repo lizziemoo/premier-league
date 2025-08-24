@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
+const API_KEY = process.env.API_FOOTBALL_KEY || '9824f597f16e61fd4792cfe101c6e3d6';
 
 // Allow CORS for local development
 app.use((req, res, next) => {
@@ -12,11 +12,16 @@ app.use((req, res, next) => {
     next();
 });
 
-// Proxy endpoint for matches
+
+// Premier League league ID for API-Football is 39
+const LEAGUE_ID = 39;
+const SEASON = 2023; // Update to current season if needed
+
+// Proxy endpoint for matches (fixtures)
 app.get('/api/matches', async (req, res) => {
     try {
-        const response = await fetch('https://api.football-data.org/v2/competitions/PL/matches', {
-            headers: { 'X-Auth-Token': API_KEY }
+        const response = await fetch(`https://v3.football.api-sports.io/fixtures?league=${LEAGUE_ID}&season=${SEASON}`, {
+            headers: { 'x-apisports-key': API_KEY }
         });
         const data = await response.json();
         res.json(data);
@@ -29,8 +34,8 @@ app.get('/api/matches', async (req, res) => {
 // Proxy endpoint for standings
 app.get('/api/standings', async (req, res) => {
     try {
-        const response = await fetch('https://api.football-data.org/v2/competitions/PL/standings', {
-            headers: { 'X-Auth-Token': API_KEY }
+        const response = await fetch(`https://v3.football.api-sports.io/standings?league=${LEAGUE_ID}&season=${SEASON}`, {
+            headers: { 'x-apisports-key': API_KEY }
         });
         const data = await response.json();
         res.json(data);

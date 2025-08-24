@@ -3,18 +3,21 @@
 
 
 
+
 async function fetchLiveMatches() {
     try {
         const response = await fetch('https://premier-league-live-ish.onrender.com/api/matches');
         const data = await response.json();
-        const liveMatches = (data.matches || []).filter(m => m.status === 'LIVE' || m.status === 'IN_PLAY' || m.status === 'PAUSED');
+        // API-Football: data.response is an array of fixtures
+        const fixtures = data.response || [];
+        const liveMatches = fixtures.filter(m => m.fixture.status.short === '1H' || m.fixture.status.short === '2H' || m.fixture.status.short === 'LIVE' || m.fixture.status.short === 'ET' || m.fixture.status.short === 'P' || m.fixture.status.short === 'IN_PLAY');
         if (liveMatches.length > 0) {
             displayLiveMatches(liveMatches);
         } else {
             // No live matches, show recent results
-            fetchRecentResults();
+            fetchRecentResults(fixtures);
         }
-        displayLastGoalOrFixtures(liveMatches);
+        displayLastGoalOrFixtures(liveMatches, fixtures);
     } catch (error) {
         console.error('Error fetching live matches:', error);
     }
@@ -33,30 +36,23 @@ function displayLiveMatches(matches) {
         const matchElement = document.createElement('div');
         matchElement.classList.add('match');
 
-        const score = `${match.homeTeam.name} ${match.score.fullTime.home} - ${match.score.fullTime.away} ${match.awayTeam.name}`;
+        const score = `${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}`;
         matchElement.innerHTML = `
-            <h3>${match.homeTeam.name} vs ${match.awayTeam.name}</h3>
+            <h3>${match.teams.home.name} vs ${match.teams.away.name}</h3>
             <p>${score}</p>
-            <p>Goals: ${match.score.fullTime.home > 0 ? match.homeTeam.name + ' ' + match.score.fullTime.home : ''} ${match.score.fullTime.away > 0 ? match.awayTeam.name + ' ' + match.score.fullTime.away : ''}</p>
-            <p>Status: ${match.status}</p>
+            <p>Status: ${match.fixture.status.long}</p>
         `;
         scoresContainer.appendChild(matchElement);
     });
 }
 
-async function fetchRecentResults() {
-    // Fetch all matches and filter for recently finished ones
-    try {
-        const response = await fetch('https://premier-league-live-ish.onrender.com/api/matches');
-        const data = await response.json();
-        const finished = (data.matches || []).filter(m => m.status === 'FINISHED');
-        // Sort by most recent
-        finished.sort((a, b) => new Date(b.utcDate) - new Date(a.utcDate));
-        displayRecentResults(finished.slice(0, 5));
-    } catch (error) {
-        const scoresContainer = document.getElementById('scores-container');
-        scoresContainer.innerHTML = '<p>Could not load recent results.</p>';
-    }
+
+function fetchRecentResults(fixtures) {
+    // Use already-fetched fixtures to find recently finished ones
+    const finished = (fixtures || []).filter(m => m.fixture.status.short === 'FT');
+    // Sort by most recent
+    finished.sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date));
+    displayRecentResults(finished.slice(0, 5));
 }
 
 function displayRecentResults(matches) {
@@ -69,61 +65,45 @@ function displayRecentResults(matches) {
     matches.forEach(match => {
         const matchElement = document.createElement('div');
         matchElement.classList.add('match');
-        const score = `${match.homeTeam.name} ${match.score.fullTime.home} - ${match.score.fullTime.away} ${match.awayTeam.name}`;
+        const score = `${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}`;
         matchElement.innerHTML = `
-            <h4>${match.homeTeam.name} vs ${match.awayTeam.name}</h4>
+            <h4>${match.teams.home.name} vs ${match.teams.away.name}</h4>
             <p>${score}</p>
-            <p>Date: ${match.utcDate ? new Date(match.utcDate).toLocaleString() : ''}</p>
+            <p>Date: ${match.fixture.date ? new Date(match.fixture.date).toLocaleString() : ''}</p>
         `;
         scoresContainer.appendChild(matchElement);
     });
 }
 
-async function fetchUpcomingFixtures() {
-    try {
-        const response = await fetch('https://premier-league-live-ish.onrender.com/api/fixtures');
-        const data = await response.json();
-        return data.fixtures || [];
-    } catch (error) {
-        console.error('Error fetching fixtures:', error);
-        return [];
-    }
+
+function getUpcomingFixtures(fixtures) {
+    // Find fixtures with status 'NS' (Not Started)
+    const upcoming = (fixtures || []).filter(m => m.fixture.status.short === 'NS');
+    // Sort by soonest
+    upcoming.sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date));
+    return upcoming;
 }
 
-async function displayLastGoalOrFixtures(matches) {
+function displayLastGoalOrFixtures(liveMatches, allFixtures) {
     const lastGoalContainer = document.getElementById('last-goal-container');
     const lastGoalTitle = document.getElementById('last-goal-title');
     lastGoalContainer.innerHTML = '';
 
-    // If there are live matches, show last team to score
-    if (matches && matches.length > 0) {
-        let lastGoal = null;
-        matches.forEach(match => {
-            if (match.goals && match.goals.length > 0) {
-                const last = match.goals[match.goals.length - 1];
-                if (!lastGoal || new Date(last.minute) > new Date(lastGoal.minute)) {
-                    lastGoal = last;
-                }
-            }
-        });
-        if (lastGoal) {
-            lastGoalTitle.textContent = 'Last Team to Score';
-            lastGoalContainer.innerHTML = `<p>${lastGoal.team && lastGoal.team.name ? lastGoal.team.name : 'Unknown Team'}</p>`;
-        } else {
-            lastGoalTitle.textContent = 'Last Team to Score';
-            lastGoalContainer.innerHTML = '<p>No goals yet.</p>';
-        }
+    // If there are live matches, show last team to score (not available in API-Football free tier, so just show live match info)
+    if (liveMatches && liveMatches.length > 0) {
+        lastGoalTitle.textContent = 'Last Team to Score';
+        lastGoalContainer.innerHTML = '<p>Live matches in progress.</p>';
     } else {
         // No live matches, show upcoming fixtures
         lastGoalTitle.textContent = 'Upcoming Fixtures';
-        const fixtures = await fetchUpcomingFixtures();
+        const fixtures = getUpcomingFixtures(allFixtures);
         if (fixtures.length === 0) {
             lastGoalContainer.innerHTML = '<p>No upcoming fixtures found.</p>';
         } else {
             const ul = document.createElement('ul');
             fixtures.slice(0, 5).forEach(fix => {
                 const li = document.createElement('li');
-                li.textContent = `${fix.homeTeam.name} vs ${fix.awayTeam.name} - ${fix.utcDate ? new Date(fix.utcDate).toLocaleString() : ''}`;
+                li.textContent = `${fix.teams.home.name} vs ${fix.teams.away.name} - ${fix.fixture.date ? new Date(fix.fixture.date).toLocaleString() : ''}`;
                 ul.appendChild(li);
             });
             lastGoalContainer.appendChild(ul);
@@ -132,11 +112,14 @@ async function displayLastGoalOrFixtures(matches) {
 }
 
 
+
 async function fetchLeagueTable() {
     try {
         const response = await fetch('https://premier-league-live-ish.onrender.com/api/standings');
         const data = await response.json();
-        displayLeagueTable(data.standings[0].table);
+        // API-Football: data.response[0].league.standings[0] is the array of teams
+        const standings = (data.response && data.response[0] && data.response[0].league && data.response[0].league.standings && data.response[0].league.standings[0]) || [];
+        displayLeagueTable(standings);
     } catch (error) {
         console.error('Error fetching league table:', error);
     }
@@ -161,7 +144,7 @@ function displayLeagueTable(teams) {
     teams.forEach(team => {
         const teamElement = document.createElement('tr');
         teamElement.innerHTML = `
-            <td>${team.position}</td>
+            <td>${team.rank}</td>
             <td>${team.team.name}</td>
             <td>${team.points}</td>
         `;
