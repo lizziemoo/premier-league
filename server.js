@@ -42,4 +42,5 @@ app.get('/api/standings', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Proxy server running on http://localhost:${PORT}`);
+    console.log('API KEY:', API_KEY); // Debug: print API key
 });
