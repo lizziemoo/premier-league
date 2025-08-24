@@ -109,40 +109,6 @@ function displayLastGoalOrFixtures(liveMatches, allFixtures) {
             lastGoalContainer.appendChild(ul);
         }
     }
-    // Add Manchester United games since last win box
-    displayMUGamesSinceWin(allFixtures);
-}
-
-function displayMUGamesSinceWin(allFixtures) {
-    const box = document.getElementById('mu-games-since-win');
-    if (!box) return;
-    // Find all finished fixtures for Manchester United
-    const finished = (allFixtures || []).filter(m => m.fixture.status.short === 'FT' &&
-        (m.teams.home.name === 'Manchester United' || m.teams.away.name === 'Manchester United'));
-    // Find the most recent win
-    let gamesSinceWin = 0;
-    let foundWin = false;
-    for (let i = 0; i < finished.length; i++) {
-        const match = finished[i];
-        const isHome = match.teams.home.name === 'Manchester United';
-        const isAway = match.teams.away.name === 'Manchester United';
-        let muGoals = isHome ? match.goals.home : match.goals.away;
-        let oppGoals = isHome ? match.goals.away : match.goals.home;
-        if (muGoals > oppGoals) {
-            foundWin = true;
-            break;
-        }
-        gamesSinceWin++;
-    }
-    if (finished.length === 0) {
-        box.textContent = 'No finished matches for Manchester United.';
-    } else if (!foundWin) {
-        box.textContent = 'Manchester United have not won any matches this season.';
-    } else if (gamesSinceWin === 0) {
-        box.textContent = 'Manchester United won their last match!';
-    } else {
-        box.textContent = `${gamesSinceWin} game${gamesSinceWin === 1 ? '' : 's'} since Manchester United last won a match.`;
-    }
 }
 
 
@@ -158,7 +124,6 @@ async function fetchLeagueTable() {
         console.error('Error fetching league table:', error);
     }
 }
-
 
 function displayLeagueTable(teams) {
     const leagueTableContainer = document.getElementById('table-container');
@@ -176,15 +141,8 @@ function displayLeagueTable(teams) {
     leagueTableContainer.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    teams.forEach((team, idx) => {
+    teams.forEach(team => {
         const teamElement = document.createElement('tr');
-        // Add special classes for 5th and 18th place borders
-        if (team.rank === 4) {
-            teamElement.classList.add('champions-league-border');
-        }
-        if (team.rank === 18) {
-            teamElement.classList.add('relegation-border');
-        }
         teamElement.innerHTML = `
             <td>${team.rank}</td>
             <td>${team.team.name}</td>

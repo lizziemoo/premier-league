@@ -1,18 +1,3 @@
-/* Manchester United games since win box */
-.mu-games-box {
-    margin-top: 20px;
-    padding: 10px 15px;
-    background: #2d2d2d;
-    border-left: 4px solid #c70101;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 1rem;
-    text-align: center;
-    max-width: 320px;
-    margin-left: auto;
-    margin-right: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
 body {
     background-color: #121212;
     color: #ffffff;
@@ -103,14 +88,6 @@ h1, h2, h3 {
 }
 #table-container tr:hover {
     background-color: #444;
-}
-
-/* Thicker borders for league zones */
-#table-container tr.champions-league-border td {
-    border-bottom: 4px solid #1e90ff !important;
-}
-#table-container tr.relegation-border td {
-    border-top: 4px solid #c70101 !important;
 }
 
 @media (max-width: 900px) {
