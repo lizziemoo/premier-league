@@ -150,10 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
         L2: { src: 'assets/league-two.png', alt: 'League Two' }
     };
     const leagueTitles = {
-        PL: 'Premier League Live (2025/26 Season)',
-        CH: 'Championship Live (2025/26 Season)',
-        L1: 'League One Live (2025/26 Season)',
-        L2: 'League Two Live (2025/26 Season)'
+    PL: 'Premier League 25/26',
+    CH: 'Championship 25/26',
+    L1: 'League One 25/26',
+    L2: 'League Two 25/26'
     };
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
