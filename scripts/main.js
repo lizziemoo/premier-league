@@ -1,19 +1,9 @@
-// This file contains the JavaScript code that interacts with the football-data.org API. 
-// It fetches live updates for matches, scores, goal scorers, and league standings. 
-// It also handles real-time updates and DOM manipulation to display the latest information.
-
-require('dotenv').config();
-const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
-
-const baseUrl = 'https://api.football-data.org/v2/';
+// This file contains the JavaScript code that interacts with your Render backend proxy.
+// It fetches live updates for matches and league standings, and updates the DOM.
 
 async function fetchLiveMatches() {
     try {
-        const response = await fetch(`${baseUrl}matches`, {
-            headers: {
-                'X-Auth-Token': API_KEY
-            }
-        });
+        const response = await fetch('https://premier-league-live-ish.onrender.com/api/matches');
         const data = await response.json();
         displayLiveMatches(data.matches);
     } catch (error) {
@@ -22,7 +12,7 @@ async function fetchLiveMatches() {
 }
 
 function displayLiveMatches(matches) {
-    const scoresContainer = document.getElementById('scores');
+    const scoresContainer = document.getElementById('scores-container');
     scoresContainer.innerHTML = '';
 
     matches.forEach(match => {
@@ -42,11 +32,7 @@ function displayLiveMatches(matches) {
 
 async function fetchLeagueTable() {
     try {
-        const response = await fetch(`${baseUrl}competitions/PL/standings`, {
-            headers: {
-                'X-Auth-Token': API_KEY
-            }
-        });
+        const response = await fetch('https://premier-league-live-ish.onrender.com/api/standings');
         const data = await response.json();
         displayLeagueTable(data.standings[0].table);
     } catch (error) {
@@ -55,7 +41,7 @@ async function fetchLeagueTable() {
 }
 
 function displayLeagueTable(teams) {
-    const leagueTableContainer = document.getElementById('league-table');
+    const leagueTableContainer = document.getElementById('table-container');
     leagueTableContainer.innerHTML = '';
 
     teams.forEach(team => {
@@ -78,37 +64,3 @@ function updateData() {
 updateData();
 // Set interval for real-time updates
 setInterval(updateData, 30000); // Update every 30 seconds
-
-// Example usage in a fetch request:
-fetch('https://api.football-data.org/v2/competitions/PL/matches', {
-    headers: { 'X-Auth-Token': API_KEY }
-})
-.then(response => response.json())
-.then(data => {
-    // Handle the data
-})
-.catch(error => {
-    console.error('Error fetching data:', error);
-});
-
-// Example for matches:
-fetch('https://premier-league-2yfh.onrender.com/api/matches')
-    .then(response => response.json())
-    .then(data => {
-        // Handle the data
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
-    });
-
-// Example for standings:
-fetch('https://premier-league-2yfh.onrender.com/api/standings')
-    .then(response => response.json())
-    .then(data => {
-        // Handle the data
-    })
-    .catch(error => {
-        console.error('Error fetching data:', error);
-    });
-
-// Server file location: C:\Users\lizzi\Documents\Webpage\premier-league-live\server.js
