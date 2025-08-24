@@ -1,3 +1,34 @@
+// Proxy endpoint for match stats
+app.get('/api/matchstats', async (req, res) => {
+    const fixture = req.query.fixture;
+    if (!fixture) return res.status(400).json({ error: 'Missing fixture id' });
+    try {
+        const response = await fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${fixture}`, {
+            headers: { 'x-apisports-key': API_KEY }
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching match stats:', error);
+        res.status(500).json({ error: 'Failed to fetch match stats' });
+    }
+});
+
+// Proxy endpoint for lineups
+app.get('/api/lineups', async (req, res) => {
+    const fixture = req.query.fixture;
+    if (!fixture) return res.status(400).json({ error: 'Missing fixture id' });
+    try {
+        const response = await fetch(`https://v3.football.api-sports.io/fixtures/lineups?fixture=${fixture}`, {
+            headers: { 'x-apisports-key': API_KEY }
+        });
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error fetching lineups:', error);
+        res.status(500).json({ error: 'Failed to fetch lineups' });
+    }
+});
 require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
@@ -13,16 +44,27 @@ app.use((req, res, next) => {
 });
 
 
-// Premier League league ID for API-Football is 39
-const LEAGUE_ID = 39;
-const SEASON = 2023; // Use 2023 season for free API-Football data
+
+// League IDs for API-Football
+const LEAGUE_IDS = {
+    PL: 39, // Premier League
+    CH: 40, // Championship
+    L1: 41, // League One
+    L2: 42  // League Two
+};
+const DEFAULT_LEAGUE = 39;
+const SEASON = 2025; // Use current season for Pro plan
 
 // Proxy endpoint for matches (fixtures)
 app.get('/api/matches', async (req, res) => {
     try {
-        const response = await fetch(`https://v3.football.api-sports.io/fixtures?league=${LEAGUE_ID}&season=${SEASON}`, {
-            headers: { 'x-apisports-key': API_KEY }
-        });
+        let leagueId = DEFAULT_LEAGUE;
+        if (req.query.league) {
+            // Accept league code (PL, CH, L1, L2, FAC) or numeric ID
+            leagueId = LEAGUE_IDS[req.query.league] || req.query.league;
+        }
+        const response = await fetch(`https://v3.football.api-sports.io/fixtures?league=${leagueId}&season=${SEASON}`,
+            { headers: { 'x-apisports-key': API_KEY } });
         const data = await response.json();
         res.json(data);
     } catch (error) {
@@ -34,9 +76,12 @@ app.get('/api/matches', async (req, res) => {
 // Proxy endpoint for standings
 app.get('/api/standings', async (req, res) => {
     try {
-        const response = await fetch(`https://v3.football.api-sports.io/standings?league=${LEAGUE_ID}&season=${SEASON}`, {
-            headers: { 'x-apisports-key': API_KEY }
-        });
+        let leagueId = DEFAULT_LEAGUE;
+        if (req.query.league) {
+            leagueId = LEAGUE_IDS[req.query.league] || req.query.league;
+        }
+        const response = await fetch(`https://v3.football.api-sports.io/standings?league=${leagueId}&season=${SEASON}`,
+            { headers: { 'x-apisports-key': API_KEY } });
         const data = await response.json();
         res.json(data);
     } catch (error) {

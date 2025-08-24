@@ -8,10 +8,27 @@
 </head>
 <body>
     <div class="pl-container">
+        <nav class="pl-navbar">
+            <ul class="pl-tabs">
+                <li class="pl-tab pl-tab-active" data-league="PL"><img src="assets/premier-league.png" alt="Premier League" class="pl-league-logo"> Premier League</li>
+                <li class="pl-tab" data-league="CH"><img src="assets/championship.png" alt="Championship" class="pl-league-logo"> Championship</li>
+                <li class="pl-tab" data-league="L1"><img src="assets/league-one.png" alt="League One" class="pl-league-logo"> League One</li>
+                <li class="pl-tab" data-league="L2"><img src="assets/league-two.png" alt="League Two" class="pl-league-logo"> League Two</li>
+            </ul>
+        </nav>
         <header class="pl-header">
-            <h1>Premier League Live (2023 Season)</h1>
+            <h1><img id="main-league-logo" src="assets/premier-league.png" alt="Premier League" class="pl-league-logo-heading"> <span id="main-league-title"></span>Premier League Live (2025/26 Season)</span></h1>
         </header>
         <main class="pl-main">
+            <!-- Match details modal -->
+            <div id="match-modal" class="pl-modal" style="display:none;">
+                <div class="pl-modal-content">
+                    <span id="modal-close" class="pl-modal-close">&times;</span>
+                    <div id="modal-body">
+                        <!-- Match details will be loaded here -->
+                    </div>
+                </div>
+            </div>
             <section id="current-scores" class="pl-scores">
                 <h2>Current Scores</h2>
                 <div id="scores-container">

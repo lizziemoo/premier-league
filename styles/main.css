@@ -1,11 +1,389 @@
-body {
-    background-color: #121212;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
+/* League logo in main heading */
+.pl-league-logo-heading {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 12px;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+}
+/* League logo in navbar tab */
+.pl-league-logo {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 8px;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+/* Modal for match details */
+.pl-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.7);
+}
+.pl-modal-content {
+    background: #232323;
+    margin: 60px auto;
+    padding: 32px 28px;
+    border-radius: 10px;
+    width: 95%;
+    max-width: 600px;
+    color: #fff;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+}
+.pl-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 2em;
+    color: #ffc107;
+    cursor: pointer;
+    font-weight: bold;
+}
+/* FA Cup results list styling */
+.facup-results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.facup-results-list li {
+    margin-bottom: 14px;
+    background: #181818;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 1em;
+    color: #eee;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
+.facup-result-date {
+    color: #aaa;
+    font-size: 0.95em;
+    margin-left: 8px;
+}
+/* FA Cup fixture list styling */
+.facup-fixture-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.facup-fixture-list li {
+    margin-bottom: 14px;
+    background: #181818;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 1em;
+    color: #eee;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
+/* FA Cup news feed styling */
+.facup-news-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.facup-news-list li {
+    margin-bottom: 18px;
+    background: #181818;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 1em;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
+.facup-news-list a {
+    color: #ffc107;
+    text-decoration: none;
+    font-weight: 500;
+}
+.facup-news-list a:hover {
+    text-decoration: underline;
+}
+.facup-news-source {
+    display: block;
+    color: #aaa;
+    font-size: 0.95em;
+    margin-top: 2px;
+}
+/* FA Cup layout */
+#facup-results, #facup-fixtures, #facup-news {
+    background: #232323;
+    border-radius: 8px;
+    padding: 18px 16px;
+    margin: 10px 0;
+    min-height: 120px;
+}
+#facup-news {
+    text-align: center;
+}
+
+@media (min-width: 900px) {
+    #scores-container, #last-goal, #league-table {
+        display: flex;
+        flex-direction: column;
+    }
+    .pl-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: auto;
+        gap: 24px;
+    }
+    #scores-container { grid-column: 1; }
+    #last-goal { grid-column: 2; }
+    #league-table { grid-column: 3; }
+}
+/* Top navbar tabs */
+.pl-navbar {
+    width: 100%;
+    background: #181818;
+    border-bottom: 2px solid #333;
+    margin-bottom: 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.pl-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
     margin: 0;
     padding: 0;
 }
+.pl-tab {
+    color: #fff;
+    padding: 14px 28px;
+    cursor: pointer;
+    font-size: 1.08em;
+    font-weight: 500;
+    border: none;
+    background: none;
+    transition: background 0.2s, color 0.2s;
+    border-bottom: 3px solid transparent;
+}
+.pl-tab:hover {
+    background: #232323;
+    color: #ffc107;
+}
+.pl-tab-active {
+    border-bottom: 3px solid #ffc107;
+    color: #ffc107;
+    background: #232323;
+}
+/* Upcoming fixtures styling */
+.pl-fixture-day {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+.pl-fixture-row {
+    background: #232323;
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 1em;
+    color: #eee;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+body {
+    background: linear-gradient(135deg, #181c2b 0%, #23272f 100%);
+    color: #f5f6fa;
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
 
+/* Accent color and card style */
+
+:root {
+    --accent: #ff4fd8;
+    --accent-dark: #6c1aff;
+    --accent-blue: #00eaff;
+    --accent-pink: #ff4fd8;
+    --accent-yellow: #ffe156;
+    --card-bg: #1a1530;
+    --card-shadow: 0 4px 24px rgba(80,0,120,0.18);
+}
+
+body {
+    background: linear-gradient(135deg, #1a1530 0%, #23272f 60%, #2d1b4d 100%);
+    color: #f5f6fa;
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    /* Subtle synthwave grid overlay */
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(255,255,255,0.03) 32px), repeating-linear-gradient(90deg, transparent, transparent 31px, rgba(255,255,255,0.03) 32px);
+}
+
+.pl-main > section, .pl-main > aside {
+    background: var(--card-bg);
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+    margin: 18px 0;
+    padding: 28px 22px 22px 22px;
+    transition: box-shadow 0.2s;
+}
+.pl-main > section:hover, .pl-main > aside:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+}
+
+/* Navbar improvements */
+.pl-navbar {
+    background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent-pink) 100%);
+    border-bottom: 3px solid var(--accent-blue);
+    box-shadow: 0 2px 12px rgba(80,0,120,0.18);
+}
+.pl-tab {
+    color: #fff;
+    padding: 16px 32px;
+    font-size: 1.12em;
+    font-weight: 600;
+    border: none;
+    background: none;
+    border-bottom: 3px solid transparent;
+    transition: background 0.2s, color 0.2s, border-bottom 0.2s;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px #6c1aff44;
+}
+.pl-tab:hover {
+    background: var(--accent-dark);
+    color: var(--accent-yellow);
+    border-bottom: 3px solid var(--accent-blue);
+}
+.pl-tab-active {
+    border-bottom: 3px solid var(--accent-blue);
+    color: var(--accent-pink);
+    background: #232323;
+    text-shadow: 0 2px 8px #ff4fd888;
+}
+
+/* Headings */
+h1, h2, h3, h4 {
+    font-family: 'Segoe UI Semibold', 'Roboto', 'Arial', sans-serif;
+    letter-spacing: 0.5px;
+}
+h1 {
+    font-size: 2.2em;
+    margin-bottom: 10px;
+    color: var(--accent-pink);
+    text-shadow: 0 2px 16px #ff4fd888, 0 2px 8px #00eaff44;
+    letter-spacing: 1px;
+}
+h2 {
+    font-size: 1.4em;
+    color: var(--accent-blue);
+    margin-bottom: 12px;
+    text-shadow: 0 2px 8px #00eaff44;
+}
+h3 {
+    font-size: 1.15em;
+    color: var(--accent-yellow);
+    margin-bottom: 10px;
+    text-shadow: 0 2px 8px #ffe15644;
+}
+
+/* Match cards */
+.match {
+    background: linear-gradient(90deg, #23242b 60%, #2d1b4d 100%);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #6c1aff33;
+    margin: 14px 0;
+    padding: 18px 16px;
+    transition: box-shadow 0.18s, background 0.18s;
+    border-left: 4px solid var(--accent-pink);
+    cursor: pointer;
+}
+.match:hover {
+    background: linear-gradient(90deg, #2d1b4d 0%, #23242b 100%);
+    box-shadow: 0 6px 18px #00eaff33;
+    border-left: 4px solid var(--accent-blue);
+}
+
+/* Modal improvements */
+.pl-modal-content {
+    background: #23242b;
+    color: #f5f6fa;
+    border: 2px solid var(--accent-pink);
+    box-shadow: 0 8px 32px #6c1aff33;
+}
+.pl-modal-close {
+    color: var(--accent-yellow);
+    transition: color 0.2s;
+    text-shadow: 0 2px 8px #ffe15644;
+}
+.pl-modal-close:hover {
+    color: var(--accent-pink);
+}
+
+/* Table improvements */
+#table-container {
+    background: #181c2b;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #6c1aff33;
+    margin-top: 10px;
+    overflow: hidden;
+}
+#table-container th {
+    background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent-pink) 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.05em;
+    text-shadow: 0 2px 8px #6c1aff44;
+}
+#table-container tr:hover {
+    background: #2d1b4d;
+}
+#table-container td {
+    font-size: 1.05em;
+}
+
+/* Team logo and name styling */
+.pl-team-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pl-team-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    margin-right: 4px;
+}
+.pl-team-name {
+    font-weight: 500;
+}
+
+/* Responsive improvements */
+@media (max-width: 900px) {
+    .pl-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+    .pl-scores, .pl-last-goal, .pl-league-table {
+        grid-column: 1;
+        grid-row: auto;
+    }
+    .pl-main > section, .pl-main > aside {
+        margin: 12px 0;
+        padding: 18px 8px 14px 8px;
+    }
+}
 .pl-container {
     display: flex;
     flex-direction: column;
@@ -89,6 +467,42 @@ h1, h2, h3 {
 #table-container tr:hover {
     background-color: #444;
 }
+
+/* Team logo and name styling */
+.pl-team-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pl-team-logo {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    margin-right: 4px;
+}
+.pl-team-name {
+    font-weight: 500;
+}
+
+/* Form boxes (W/D/L) */
+.pl-form-box {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 4px;
+    margin-right: 2px;
+    font-weight: bold;
+    color: #fff;
+    font-size: 14px;
+}
+.pl-form-W { background: #4caf50; }
+.pl-form-D { background: #ffc107; color: #222; }
+.pl-form-L { background: #f44336; }
 
 @media (max-width: 900px) {
     .pl-main {
