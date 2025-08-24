@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 
 // Premier League league ID for API-Football is 39
 const LEAGUE_ID = 39;
-const SEASON = 2025; // Update to current season if needed
+const SEASON = 2023; // Use 2023 season for free API-Football data
 
 // Proxy endpoint for matches (fixtures)
 app.get('/api/matches', async (req, res) => {
