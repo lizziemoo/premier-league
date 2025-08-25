@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const API_KEY = process.env.API_FOOTBALL_KEY || '9824f597f16e61fd4792cfe101c6e3d6';
-
+const SEASON = 2025;
 // Enable CORS for all routes
 app.use(cors());
 
@@ -58,7 +58,7 @@ const LEAGUE_IDS = {
     L2: 42  // League Two
 };
 const DEFAULT_LEAGUE = 39;
-const SEASON = 2025; // Use current season for Pro plan
+// const SEASON = 2025; // Use correct season for API-Football (2025/26)
 
 // Proxy endpoint for matches (fixtures)
 app.get('/api/matches', async (req, res) => {
