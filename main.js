@@ -274,18 +274,18 @@ function displayRecentResults(matches) {
             <strong>${match.teams.home.name}</strong> <span style="color:#aaa;">vs</span> <strong>${match.teams.away.name}</strong><br>
             <span style="font-size:1.1em;">${score}</span>
         `;
-        matchElement.addEventListener('click', () => openMatchModal(match.fixture.id));
+    matchElement.addEventListener('click', () => openMatchModal(match.fixture.id, match));
         resultsFlex.appendChild(matchElement);
     });
     scoresContainer.appendChild(resultsFlex);
 }
 // Modal logic for match details
-function openMatchModal(fixtureId) {
+function openMatchModal(fixtureId, matchObj) {
     const modal = document.getElementById('match-modal');
     const modalBody = document.getElementById('modal-body');
     modal.style.display = 'block';
     modalBody.innerHTML = '<p>Loading match details...</p>';
-    fetchMatchDetails(fixtureId);
+    fetchMatchDetails(fixtureId, matchObj);
 }
 
 document.getElementById('modal-close').onclick = function() {
@@ -307,8 +307,8 @@ async function fetchMatchDetails(fixtureId) {
         // Fetch lineups
         const lineupRes = await fetch(`https://premier-league-live-ish.onrender.com/api/lineups?fixture=${fixtureId}`);
         const lineupData = await lineupRes.json();
-        // Render details
-        modalBody.innerHTML = renderMatchDetails(statsData, lineupData);
+        // Render details, pass matchObj as third arg
+        modalBody.innerHTML = renderMatchDetails(statsData, lineupData, arguments[1]);
     } catch (e) {
         modalBody.innerHTML = '<p>Unable to load match details.</p>';
     }
@@ -331,16 +331,20 @@ function renderMatchDetails(statsData, lineupData) {
         return '<p>No stats or lineups available for this match.</p>';
     }
     const [homeStats, awayStats] = statsData.response;
-    // Header row: team crests, names, score, date, venue, referee
+    // Use matchObj for score if available
+    let homeScore = '?', awayScore = '?';
+    if (arguments[2] && arguments[2].goals) {
+        homeScore = arguments[2].goals.home != null ? arguments[2].goals.home : '?';
+        awayScore = arguments[2].goals.away != null ? arguments[2].goals.away : '?';
+    }
+    // Header row: team crests, names, score
     html += `<div class="pl-match-modal-header" style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#23242b 60%,#2d1b4d 100%);padding:18px 10px 10px 10px;border-radius:10px 10px 0 0;">
         <div style="text-align:center;width:100px;">
             <img src="${homeStats.team.logo}" alt="${homeStats.team.name}" style="width:60px;height:60px;border-radius:8px;background:#fff;box-shadow:0 2px 8px #6c1aff33;">
             <div style="margin-top:8px;font-weight:600;">${homeStats.team.name}</div>
         </div>
         <div style="flex:1;text-align:center;">
-            <div style="font-size:1.1em;color:#aaa;">${homeStats.statistics.find(s=>s.type==='Venue')?.value || ''}</div>
-            <div style="font-size:1.2em;margin:4px 0;">${homeStats.statistics.find(s=>s.type==='Date')?.value || ''}</div>
-            <div style="font-size:2.2em;font-weight:700;color:var(--accent-pink);margin:4px 0;">${homeStats.statistics.find(s=>s.type==='Goals')?.value || '?'} - ${awayStats.statistics.find(s=>s.type==='Goals')?.value || '?'}</div>
+            <div style="font-size:2.2em;font-weight:700;color:var(--accent-pink);margin:4px 0;">${homeScore} - ${awayScore}</div>
             <div style="color:#00eaff;font-size:1em;">Match Finished</div>
         </div>
         <div style="text-align:center;width:100px;">
