@@ -1,10 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const fetch = require('node-fetch');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const API_KEY = process.env.API_FOOTBALL_KEY || '9824f597f16e61fd4792cfe101c6e3d6';
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Proxy endpoint for match stats
 app.get('/api/matchstats', async (req, res) => {
