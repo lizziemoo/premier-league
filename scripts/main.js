@@ -217,7 +217,14 @@ function fetchRecentResults(fixtures) {
     const finished = (fixtures || []).filter(m => m.fixture.status.short === 'FT');
     // Sort by most recent
     finished.sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date));
-    displayRecentResults(finished.slice(0, 5));
+    if (finished.length === 0) {
+        displayRecentResults([]);
+        return;
+    }
+    // Group by match day (YYYY-MM-DD)
+    const latestDate = finished.length > 0 ? finished[0].fixture.date.slice(0, 10) : null;
+    const latestDayMatches = finished.filter(m => m.fixture.date.slice(0, 10) === latestDate);
+    displayRecentResults(latestDayMatches);
 }
 
 function displayRecentResults(matches) {
