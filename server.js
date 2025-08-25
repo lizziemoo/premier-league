@@ -83,10 +83,16 @@ app.get('/api/standings', async (req, res) => {
     try {
         let leagueId = DEFAULT_LEAGUE;
         if (req.query.league) {
-            leagueId = LEAGUE_IDS[req.query.league] || req.query.league;
+            // Accept both league code (PL, CH, L1, L2) and numeric ID (39, 40, 41, 42)
+            if (LEAGUE_IDS[req.query.league]) {
+                leagueId = LEAGUE_IDS[req.query.league];
+            } else if (!isNaN(req.query.league)) {
+                leagueId = req.query.league;
+            }
         }
-        const response = await fetch(`https://v3.football.api-sports.io/standings?league=${leagueId}&season=${SEASON}`,
-            { headers: { 'x-apisports-key': API_KEY } });
+        const apiUrl = `https://v3.football.api-sports.io/standings?league=${leagueId}&season=${SEASON}`;
+        console.log('[STANDINGS] Requested league:', req.query.league, '| Resolved leagueId:', leagueId, '| API URL:', apiUrl);
+        const response = await fetch(apiUrl, { headers: { 'x-apisports-key': API_KEY } });
         const data = await response.json();
         res.json(data);
     } catch (error) {
