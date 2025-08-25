@@ -50,7 +50,7 @@ async function fetchLeagueTable() {
     }
     try {
         console.log('Fetching league table for league:', currentLeague, 'ID:', LEAGUE_IDS[currentLeague]);
-        const response = await fetch(`https://premier-league-live-ish.onrender.com/api/standings?league=${LEAGUE_IDS[currentLeague]}`);
+    const response = await fetch(`https://premier-league-live-ish.onrender.com/api/standings?league=${currentLeague}`);
         const data = await response.json();
         console.log('Received standings data:', data);
         // API-Football: data.response[0].league.standings[0] is the array of teams

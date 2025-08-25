@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const API_KEY = process.env.API_FOOTBALL_KEY || '9824f597f16e61fd4792cfe101c6e3d6';
+const API_KEY = process.env.API_FOOTBALL_KEY;
 const SEASON = 2025;
 // Enable CORS for all routes
 app.use(cors());
@@ -103,8 +103,4 @@ app.get('/api/standings', async (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Proxy server running on http://localhost:${PORT}`);
-       app.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        next();
-    }); console.log('API KEY:', API_KEY); // Debug: print API key
 });
