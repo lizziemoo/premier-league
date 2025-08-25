@@ -1,34 +1,58 @@
+// This file contains the JavaScript code that interacts with your Render backend proxy.
+// It fetches live updates for matches and league standings, and updates the DOM.
+
+
+
+
+
 // League IDs for API-Football
 const LEAGUE_IDS = {
     PL: 39, // Premier League
     CH: 40, // Championship
     L1: 41, // League One
-    L2: 42  // League Two
+    L2: 42, // League Two
+    FAC: 45 // FA Cup
 };
 let currentLeague = 'PL';
 
 async function fetchLiveMatches() {
+    // For FA Cup, show info instead of matches
+    if (currentLeague === 'FAC') {
+        displayFACupInfo();
+        return;
+    }
     try {
         const response = await fetch(`https://premier-league-live-ish.onrender.com/api/matches?league=${LEAGUE_IDS[currentLeague]}`);
         const data = await response.json();
         // API-Football: data.response is an array of fixtures
         const fixtures = data.response || [];
-        const liveMatches = fixtures.filter(m => ["1H","2H","LIVE","ET","P","IN_PLAY"].includes(m.fixture.status.short));
+        const liveMatches = fixtures.filter(m => m.fixture.status.short === '1H' || m.fixture.status.short === '2H' || m.fixture.status.short === 'LIVE' || m.fixture.status.short === 'ET' || m.fixture.status.short === 'P' || m.fixture.status.short === 'IN_PLAY');
         if (liveMatches.length > 0) {
             displayLiveMatches(liveMatches);
         } else {
+            // No live matches, show recent results
             fetchRecentResults(fixtures);
         }
+        displayLastGoalOrFixtures(liveMatches, fixtures);
     } catch (error) {
         console.error('Error fetching live matches:', error);
     }
 }
 
 async function fetchLeagueTable() {
-    document.getElementById('league-table').style.display = '';
+    if (currentLeague === 'FAC') {
+        displayFACupInfo();
+        // Hide league table container for FA Cup
+        document.getElementById('league-table').style.display = 'none';
+        return;
+    } else {
+        document.getElementById('league-table').style.display = '';
+    }
     try {
+        console.log('Fetching league table for league:', currentLeague, 'ID:', LEAGUE_IDS[currentLeague]);
         const response = await fetch(`https://premier-league-live-ish.onrender.com/api/standings?league=${LEAGUE_IDS[currentLeague]}`);
         const data = await response.json();
+        console.log('Received standings data:', data);
         // API-Football: data.response[0].league.standings[0] is the array of teams
         const standings = (data.response && data.response[0] && data.response[0].league && data.response[0].league.standings && data.response[0].league.standings[0]) || [];
         displayLeagueTable(standings);
@@ -36,12 +60,137 @@ async function fetchLeagueTable() {
         console.error('Error fetching league table:', error);
     }
 }
-    const scoresContainer = document.getElementById('scores-container');
 
+async function displayFACupInfo() {
+    // Replace main content with FA Cup info
+    const scoresContainer = document.getElementById('scores-container');
+    const lastGoalContainer = document.getElementById('last-goal-container');
+    const lastGoalTitle = document.getElementById('last-goal-title');
+    const leagueTableContainer = document.getElementById('table-container');
+
+    // Left: Real FA Cup Results (recent finished matches)
+    scoresContainer.innerHTML = '<h3>Current Scores</h3><div id="facup-results">Loading results...</div>';
+    fetchFACupResults();
+
+    // Right: Real FA Cup Fixtures (upcoming matches)
+    lastGoalTitle.textContent = 'FA Cup Fixtures';
+    lastGoalContainer.innerHTML = '<div id="facup-fixtures">Loading fixtures...</div>';
+    fetchFACupFixtures();
+
+    // Middle: News
+    leagueTableContainer.innerHTML = '<h3>FA Cup News</h3><div id="facup-news">Loading latest FA Cup news...</div>';
+    fetchFACupNews();
+}
+
+async function fetchFACupResults() {
+    const resultsContainer = document.getElementById('facup-results');
+    try {
+        const response = await fetch(`https://premier-league-live-ish.onrender.com/api/matches?league=FAC`);
+        const data = await response.json();
+        // Find recently finished matches (status FT)
+        const finished = (data.response || []).filter(fix => fix.fixture.status.short === 'FT');
+        if (finished.length === 0) {
+            resultsContainer.textContent = 'No recent results found.';
+            return;
+        }
+        resultsContainer.innerHTML = '<ul class="facup-results-list">' +
+            finished.slice(0, 10).map(fix =>
+                `<li>${fix.teams.home.name} ${fix.goals.home} - ${fix.goals.away} ${fix.teams.away.name} <span class="facup-result-date">(${new Date(fix.fixture.date).toLocaleDateString()})</span></li>`
+            ).join('') + '</ul>';
+    } catch (e) {
+        resultsContainer.textContent = 'Unable to load results.';
+    }
+}
+
+async function fetchFACupFixtures() {
+    const fixturesContainer = document.getElementById('facup-fixtures');
+    try {
+        const response = await fetch(`https://premier-league-live-ish.onrender.com/api/matches?league=FAC`);
+        const data = await response.json();
+        const fixtures = (data.response || []).filter(fix => fix.fixture.status.short === 'NS');
+        if (fixtures.length === 0) {
+            fixturesContainer.textContent = 'No upcoming fixtures found.';
+            return;
+        }
+        fixturesContainer.innerHTML = '<ul class="facup-fixture-list">' +
+            fixtures.slice(0, 10).map(fix =>
+                `<li>${fix.teams.home.name} vs ${fix.teams.away.name} - ${new Date(fix.fixture.date).toLocaleString()}</li>`
+            ).join('') + '</ul>';
+    } catch (e) {
+        fixturesContainer.textContent = 'Unable to load fixtures.';
+    }
+}
+
+async function fetchFACupNews() {
+    const newsContainer = document.getElementById('facup-news');
+    try {
+        // Use NewsAPI for demonstration (replace with your own API key if needed)
+        const apiKey = 'demo'; // Replace with your NewsAPI key
+        const url = `https://newsapi.org/v2/everything?q=fa%20cup&language=en&sortBy=publishedAt&pageSize=5&apiKey=${apiKey}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.articles && data.articles.length > 0) {
+            newsContainer.innerHTML = '<ul class="facup-news-list">' +
+                data.articles.map(article =>
+                    `<li><a href="${article.url}" target="_blank">${article.title}</a><br><span class="facup-news-source">${article.source.name} - ${new Date(article.publishedAt).toLocaleDateString()}</span></li>`
+                ).join('') + '</ul>';
+        } else {
+            newsContainer.textContent = 'No recent FA Cup news found.';
+        }
+    } catch (e) {
+        newsContainer.textContent = 'Unable to load news.';
+    }
+}
+
+// Tab switching logic
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.pl-tab');
+    const leagueLogos = {
+        PL: { src: 'assets/premier-league.png', alt: 'Premier League' },
+        CH: { src: 'assets/championship.png', alt: 'Championship' },
+        L1: { src: 'assets/league-one.png', alt: 'League One' },
+        L2: { src: 'assets/league-two.png', alt: 'League Two' }
+    };
+    const leagueTitles = {
+    PL: 'Premier League 25/26',
+    CH: 'Championship 25/26',
+    L1: 'League One 25/26',
+    L2: 'League Two 25/26'
+    };
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (tab.classList.contains('pl-tab-active')) return;
+            document.querySelector('.pl-tab-active').classList.remove('pl-tab-active');
+            tab.classList.add('pl-tab-active');
+            currentLeague = tab.getAttribute('data-league');
+            // Update header logo and title
+            const logo = document.getElementById('main-league-logo');
+            const title = document.getElementById('main-league-title');
+            logo.src = leagueLogos[currentLeague].src;
+            logo.alt = leagueLogos[currentLeague].alt;
+            // Clear the heading and set only the correct league name
+            title.textContent = '';
+            title.textContent = leagueTitles[currentLeague];
+            document.getElementById('league-table').style.display = '';
+            document.getElementById('scores-container').innerHTML = '';
+            document.getElementById('last-goal-title').textContent = '';
+            document.getElementById('last-goal-container').innerHTML = '';
+            updateData();
+        });
+    });
+});
 
 function displayLiveMatches(matches) {
     const scoresContainer = document.getElementById('scores-container');
     scoresContainer.innerHTML = '';
+
+    if (!matches || matches.length === 0) {
+        scoresContainer.innerHTML = '<p>No live matches at the moment.</p>';
+        return;
+    }
+
+    // Only show heading if there are live matches
+    const heading = document.createElement('h3');
     heading.textContent = 'Current Scores';
     scoresContainer.appendChild(heading);
 
