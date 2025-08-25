@@ -49,6 +49,7 @@ async function fetchLeagueTable() {
         document.getElementById('league-table').style.display = '';
     }
     try {
+    console.log('DEBUG: currentLeague =', currentLeague, '| LEAGUE_IDS[currentLeague] =', LEAGUE_IDS[currentLeague]);
     const url = `https://premier-league-live-ish.onrender.com/api/standings?league=${LEAGUE_IDS[currentLeague]}`;
     console.log('Fetching league table for league:', currentLeague, 'ID:', LEAGUE_IDS[currentLeague], 'URL:', url);
     const response = await fetch(url);
