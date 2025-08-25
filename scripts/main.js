@@ -49,8 +49,10 @@ async function fetchLeagueTable() {
         document.getElementById('league-table').style.display = '';
     }
     try {
+        console.log('Fetching league table for league:', currentLeague, 'ID:', LEAGUE_IDS[currentLeague]);
         const response = await fetch(`https://premier-league-live-ish.onrender.com/api/standings?league=${LEAGUE_IDS[currentLeague]}`);
         const data = await response.json();
+        console.log('Received standings data:', data);
         // API-Football: data.response[0].league.standings[0] is the array of teams
         const standings = (data.response && data.response[0] && data.response[0].league && data.response[0].league.standings && data.response[0].league.standings[0]) || [];
         displayLeagueTable(standings);
