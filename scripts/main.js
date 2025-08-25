@@ -49,8 +49,10 @@ async function fetchLeagueTable() {
         document.getElementById('league-table').style.display = '';
     }
     try {
-        console.log('Fetching league table for league:', currentLeague, 'ID:', LEAGUE_IDS[currentLeague]);
-    const response = await fetch(`https://premier-league-live-ish.onrender.com/api/standings?league=${currentLeague}`);
+    console.log('DEBUG: currentLeague =', currentLeague, '| LEAGUE_IDS[currentLeague] =', LEAGUE_IDS[currentLeague]);
+    const url = `https://premier-league-live-ish.onrender.com/api/standings?league=${LEAGUE_IDS[currentLeague]}`;
+    console.log('Fetching league table for league:', currentLeague, 'ID:', LEAGUE_IDS[currentLeague], 'URL:', url);
+    const response = await fetch(url);
         const data = await response.json();
         console.log('Received standings data:', data);
         // API-Football: data.response[0].league.standings[0] is the array of teams
@@ -272,18 +274,18 @@ function displayRecentResults(matches) {
             <strong>${match.teams.home.name}</strong> <span style="color:#aaa;">vs</span> <strong>${match.teams.away.name}</strong><br>
             <span style="font-size:1.1em;">${score}</span>
         `;
-        matchElement.addEventListener('click', () => openMatchModal(match.fixture.id));
+    matchElement.addEventListener('click', () => openMatchModal(match.fixture.id, match));
         resultsFlex.appendChild(matchElement);
     });
     scoresContainer.appendChild(resultsFlex);
 }
 // Modal logic for match details
-function openMatchModal(fixtureId) {
+function openMatchModal(fixtureId, matchObj) {
     const modal = document.getElementById('match-modal');
     const modalBody = document.getElementById('modal-body');
     modal.style.display = 'block';
     modalBody.innerHTML = '<p>Loading match details...</p>';
-    fetchMatchDetails(fixtureId);
+    fetchMatchDetails(fixtureId, matchObj);
 }
 
 document.getElementById('modal-close').onclick = function() {
@@ -305,40 +307,79 @@ async function fetchMatchDetails(fixtureId) {
         // Fetch lineups
         const lineupRes = await fetch(`https://premier-league-live-ish.onrender.com/api/lineups?fixture=${fixtureId}`);
         const lineupData = await lineupRes.json();
-        // Render details
-        modalBody.innerHTML = renderMatchDetails(statsData, lineupData);
+        // Render details, pass matchObj as third arg
+        modalBody.innerHTML = renderMatchDetails(statsData, lineupData, arguments[1]);
     } catch (e) {
         modalBody.innerHTML = '<p>Unable to load match details.</p>';
     }
 }
 
 function renderMatchDetails(statsData, lineupData) {
+    // Only show these stats:
+    // Shots on Goal, Total Shots, Fouls, Corner Kicks, Yellow Cards, Red Cards
+    const statKeys = [
+        'Shots on Goal',
+        'Total Shots',
+        'Fouls',
+        'Corner Kicks',
+        'Yellow Cards',
+        'Red Cards'
+    ];
     let html = '';
-    // Stats
-    if (statsData && statsData.response && statsData.response.length > 0) {
-        html += '<h3>Team Stats</h3>';
-        html += '<div style="display:flex;gap:24px;">';
-        statsData.response.forEach(teamStats => {
-            html += `<div><strong>${teamStats.team.name}</strong><ul style="padding-left:16px;">`;
-            teamStats.statistics.forEach(stat => {
-                html += `<li>${stat.type}: ${stat.value}</li>`;
+    // Defensive: fallback if no stats or lineups
+    if (!statsData || !statsData.response || statsData.response.length !== 2) {
+        return '<p>No stats or lineups available for this match.</p>';
+    }
+    const [homeStats, awayStats] = statsData.response;
+    // Use matchObj for score if available
+    let homeScore = '?', awayScore = '?';
+    if (arguments[2] && arguments[2].goals) {
+        homeScore = arguments[2].goals.home != null ? arguments[2].goals.home : '?';
+        awayScore = arguments[2].goals.away != null ? arguments[2].goals.away : '?';
+    }
+    // Header row: team crests, names, score
+    html += `<div class="pl-match-modal-header" style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#23242b 60%,#2d1b4d 100%);padding:18px 10px 10px 10px;border-radius:10px 10px 0 0;">
+        <div style="text-align:center;width:100px;">
+            <img src="${homeStats.team.logo}" alt="${homeStats.team.name}" style="width:60px;height:60px;border-radius:8px;background:#fff;box-shadow:0 2px 8px #6c1aff33;">
+            <div style="margin-top:8px;font-weight:600;">${homeStats.team.name}</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+            <div style="font-size:2.2em;font-weight:700;color:var(--accent-pink);margin:4px 0;">${homeScore} - ${awayScore}</div>
+            <div style="color:#00eaff;font-size:1em;">Match Finished</div>
+        </div>
+        <div style="text-align:center;width:100px;">
+            <img src="${awayStats.team.logo}" alt="${awayStats.team.name}" style="width:60px;height:60px;border-radius:8px;background:#fff;box-shadow:0 2px 8px #6c1aff33;">
+            <div style="margin-top:8px;font-weight:600;">${awayStats.team.name}</div>
+        </div>
+    </div>`;
+    // Stats table
+    html += `<table style="width:100%;margin:18px 0 10px 0;background:var(--card-bg);border-radius:8px;box-shadow:0 1px 6px #6c1aff22;">
+        <thead><tr style="color:var(--accent-blue);font-size:1.1em;"><th style="width:32%;text-align:center;">${homeStats.team.name}</th><th style="width:36%;text-align:center;">Stat</th><th style="width:32%;text-align:center;">${awayStats.team.name}</th></tr></thead>
+        <tbody>`;
+    statKeys.forEach(key => {
+        const homeVal = homeStats.statistics.find(s => s.type === key)?.value ?? '-';
+        const awayVal = awayStats.statistics.find(s => s.type === key)?.value ?? '-';
+        html += `<tr style="text-align:center;font-size:1.08em;">
+            <td style="color:#fff;font-weight:600;">${homeVal}</td>
+            <td style="color:var(--accent-yellow);font-weight:500;">${key}</td>
+            <td style="color:#fff;font-weight:600;">${awayVal}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    // Lineups
+    if (lineupData && lineupData.response && lineupData.response.length === 2) {
+        html += '<div style="display:flex;gap:24px;justify-content:center;margin-top:18px;">';
+        lineupData.response.forEach(team => {
+            html += `<div style="flex:1;min-width:120px;background:#181c2b;border-radius:8px;padding:10px 8px;box-shadow:0 1px 6px #6c1aff22;">
+                <div style="font-weight:600;color:var(--accent-pink);margin-bottom:6px;text-align:center;">${team.team.name}</div>
+                <ul style="list-style:none;padding:0;margin:0;">`;
+            team.startXI.forEach(player => {
+                html += `<li style="color:#fff;margin-bottom:3px;font-size:1em;">${player.player.name} <span style="color:#aaa;font-size:0.95em;">(${player.player.pos})</span></li>`;
             });
             html += '</ul></div>';
         });
         html += '</div>';
     }
-    // Lineups
-    if (lineupData && lineupData.response && lineupData.response.length > 0) {
-        html += '<h3>Lineups</h3>';
-        lineupData.response.forEach(team => {
-            html += `<div><strong>${team.team.name}</strong><ul style="padding-left:16px;">`;
-            team.startXI.forEach(player => {
-                html += `<li>${player.player.name} (${player.player.pos})</li>`;
-            });
-            html += '</ul></div>';
-        });
-    }
-    if (!html) html = '<p>No stats or lineups available for this match.</p>';
     return html;
 }
 

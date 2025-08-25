@@ -1,5 +1,5 @@
 
-# Live Football Scores
+# Premier League Live (Synthwave Edition)
 
 This project is a visually modern, synthwave-inspired web application that provides live updates for the Premier League, Championship, League One, and League Two. It features:
 - Live scores, recent results, and upcoming fixtures
@@ -97,6 +97,5 @@ This site uses [API-Football](https://www.api-football.com/) (Pro plan, Premier 
 
 
 ## Contributing
-
 
 Feel free to submit issues or pull requests if you have suggestions or improvements for the project. All feedback is welcome!
