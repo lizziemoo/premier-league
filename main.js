@@ -241,20 +241,41 @@ function displayRecentResults(matches) {
         scoresContainer.innerHTML += '<p>No recent results found.</p>';
         return;
     }
+    // Get the date from the first match (all matches are from the same day)
+    const matchDate = matches[0].fixture.date ? new Date(matches[0].fixture.date) : null;
+    if (matchDate) {
+        const dateDiv = document.createElement('div');
+        dateDiv.style.fontWeight = 'bold';
+        dateDiv.style.fontSize = '1.1em';
+        dateDiv.style.marginBottom = '8px';
+        dateDiv.textContent = matchDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        scoresContainer.appendChild(dateDiv);
+    }
+    // Create a flex container for compact cards
+    const resultsFlex = document.createElement('div');
+    resultsFlex.style.display = 'flex';
+    resultsFlex.style.flexWrap = 'wrap';
+    resultsFlex.style.gap = '12px';
+    resultsFlex.style.justifyContent = 'flex-start';
     matches.forEach(match => {
         const matchElement = document.createElement('div');
-        matchElement.classList.add('match');
+        matchElement.classList.add('match', 'compact-result');
         matchElement.style.cursor = 'pointer';
         matchElement.setAttribute('data-fixid', match.fixture.id);
+        matchElement.style.flex = '0 1 220px';
+        matchElement.style.fontSize = '0.95em';
+        matchElement.style.padding = '8px 10px';
+        matchElement.style.margin = '0';
+        matchElement.style.minWidth = '0';
         const score = `${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}`;
         matchElement.innerHTML = `
-            <h4>${match.teams.home.name} vs ${match.teams.away.name}</h4>
-            <p>${score}</p>
-            <p>Date: ${match.fixture.date ? new Date(match.fixture.date).toLocaleString() : ''}</p>
+            <strong>${match.teams.home.name}</strong> <span style="color:#aaa;">vs</span> <strong>${match.teams.away.name}</strong><br>
+            <span style="font-size:1.1em;">${score}</span>
         `;
         matchElement.addEventListener('click', () => openMatchModal(match.fixture.id));
-        scoresContainer.appendChild(matchElement);
+        resultsFlex.appendChild(matchElement);
     });
+    scoresContainer.appendChild(resultsFlex);
 }
 // Modal logic for match details
 function openMatchModal(fixtureId) {
@@ -404,17 +425,6 @@ function displayLastGoalOrFixtures(liveMatches, allFixtures) {
 
 
 
-async function fetchLeagueTable() {
-    try {
-        const response = await fetch('https://premier-league-live-ish.onrender.com/api/standings');
-        const data = await response.json();
-        // API-Football: data.response[0].league.standings[0] is the array of teams
-        const standings = (data.response && data.response[0] && data.response[0].league && data.response[0].league.standings && data.response[0].league.standings[0]) || [];
-        displayLeagueTable(standings);
-    } catch (error) {
-        console.error('Error fetching league table:', error);
-    }
-}
 
 function displayLeagueTable(teams) {
     const leagueTableContainer = document.getElementById('table-container');
