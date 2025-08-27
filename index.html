@@ -10,16 +10,33 @@
     <div class="pl-container">
         <nav class="pl-navbar">
             <ul class="pl-tabs">
-                <li class="pl-tab pl-tab-active" data-league="PL"><img src="assets/premier-league.png" alt="Premier League" class="pl-league-logo"> Premier League 25/26</li>
-                <li class="pl-tab" data-league="CH"><img src="assets/championship.png" alt="Championship" class="pl-league-logo"> Championship 25/26</li>
-                <li class="pl-tab" data-league="L1"><img src="assets/league-one.png" alt="League One" class="pl-league-logo"> League One 25/26</li>
-                <li class="pl-tab" data-league="L2"><img src="assets/league-two.png" alt="League Two" class="pl-league-logo"> League Two 25/26</li>
+                <li class="pl-tab pl-tab-active" data-league="PL"><img src="assets/premier-league.png" alt="Premier League" class="pl-league-logo"> Premier League</li>
+                <li class="pl-tab" data-league="CH"><img src="assets/championship.png" alt="EFL Championship" class="pl-league-logo"> EFL Championship</li>
+                <li class="pl-tab" data-league="L1"><img src="assets/league-one.png" alt="EFL League One" class="pl-league-logo"> EFL League One</li>
+                <li class="pl-tab" data-league="L2"><img src="assets/league-two.png" alt="EFL League Two" class="pl-league-logo"> EFL League Two</li>
+                <li class="pl-tab" data-league="LC">EFL Cup</li>
             </ul>
         </nav>
         <header class="pl-header">
-            <h1><img id="main-league-logo" src="assets/premier-league.png" alt="Premier League" class="pl-league-logo-heading"> <span id="main-league-title">Premier League Live (2025/26 Season)</span></h1>
+            <h1><span id="main-league-title">Premier League Live</span></h1>
         </header>
         <main class="pl-main">
+            <section id="league-cup-section" style="display:none;grid-column:1/4;grid-row:1;">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:start;">
+                    <div id="lc-results" style="background:var(--card-bg);border-radius:14px;box-shadow:var(--card-shadow);padding:18px 12px;">
+                        <h2 style="color:var(--accent-yellow);">Recent Results</h2>
+                        <div id="lc-results-list"></div>
+                    </div>
+                    <div id="lc-live" style="background:var(--card-bg);border-radius:14px;box-shadow:var(--card-shadow);padding:18px 12px;">
+                        <h2 style="color:var(--accent-pink);">Live Scores</h2>
+                        <div id="lc-live-list"></div>
+                    </div>
+                    <div id="lc-fixtures" style="background:var(--card-bg);border-radius:14px;box-shadow:var(--card-shadow);padding:18px 12px;">
+                        <h2 style="color:var(--accent-blue);">Upcoming Fixtures</h2>
+                        <div id="lc-fixtures-list"></div>
+                    </div>
+                </div>
+            </section>
             <!-- Match details modal -->
             <div id="match-modal" class="pl-modal" style="display:none;">
                 <div class="pl-modal-content">
@@ -49,12 +66,11 @@
             </aside>
         </main>
         <footer class="pl-footer">
-            <section id="additional-info">
-                <h2>Additional Match Information</h2>
-                <div id="info-container">
-                    <!-- Additional match information will be dynamically inserted here -->
-                </div>
-            </section>
+            <div style="display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:18px;color:#aaa;font-size:0.92em;margin-top:10px;">
+                <span>&copy; Moogle Empires 2025</span>
+                <a href="https://www.api-football.com/" target="_blank" style="color:#ffe156;text-decoration:none;">Data by API-Football</a>
+                <span style="color:#888;">Not affiliated with the Premier League or any football club</span>
+            </div>
         </footer>
     </div>
     <script src="scripts/main.js"></script>

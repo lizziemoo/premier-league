@@ -55,7 +55,8 @@ const LEAGUE_IDS = {
     PL: 39, // Premier League
     CH: 40, // Championship
     L1: 41, // League One
-    L2: 42  // League Two
+    L2: 42,  // League Two
+    LC: 48   // League Cup (EFL Cup/Carabao Cup)
 };
 const DEFAULT_LEAGUE = 39;
 // const SEASON = 2025; // Use correct season for API-Football (2025/26)

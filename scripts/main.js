@@ -11,7 +11,8 @@ const LEAGUE_IDS = {
     CH: 40, // Championship
     L1: 41, // League One
     L2: 42, // League Two
-    FAC: 45 // FA Cup
+    FAC: 45, // FA Cup
+    LC: 48 // League Cup (EFL Cup/Carabao Cup)
 };
 let currentLeague = 'PL';
 
@@ -40,14 +41,14 @@ async function fetchLiveMatches() {
 }
 
 async function fetchLeagueTable() {
-    if (currentLeague === 'FAC') {
-        displayFACupInfo();
-        // Hide league table container for FA Cup
+    if (currentLeague === 'FAC' || currentLeague === 'LC') {
+        if (currentLeague === 'FAC') displayFACupInfo();
+        // Hide league table container for FA Cup and EFL Cup
         document.getElementById('league-table').style.display = 'none';
+        // Do not fetch or display standings for cups
         return;
-    } else {
-        document.getElementById('league-table').style.display = '';
     }
+    document.getElementById('league-table').style.display = '';
     try {
     console.log('DEBUG: currentLeague =', currentLeague, '| LEAGUE_IDS[currentLeague] =', LEAGUE_IDS[currentLeague]);
     const url = `https://premier-league-live-ish.onrender.com/api/standings?league=${LEAGUE_IDS[currentLeague]}`;
@@ -149,15 +150,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.pl-tab');
     const leagueLogos = {
         PL: { src: 'assets/premier-league.png', alt: 'Premier League' },
-        CH: { src: 'assets/championship.png', alt: 'Championship' },
-        L1: { src: 'assets/league-one.png', alt: 'League One' },
-        L2: { src: 'assets/league-two.png', alt: 'League Two' }
+        CH: { src: 'assets/championship.png', alt: 'EFL Championship' },
+        L1: { src: 'assets/league-one.png', alt: 'EFL League One' },
+        L2: { src: 'assets/league-two.png', alt: 'EFL League Two' },
+        LC: { src: 'assets/league-cup.png', alt: 'EFL League Cup' }
     };
     const leagueTitles = {
-    PL: 'Premier League 25/26',
-    CH: 'Championship 25/26',
-    L1: 'League One 25/26',
-    L2: 'League Two 25/26'
+        PL: 'Premier League Live',
+        CH: 'EFL Championship',
+        L1: 'EFL League One',
+        L2: 'EFL League Two',
+        LC: 'EFL League Cup'
     };
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -165,19 +168,31 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.pl-tab-active').classList.remove('pl-tab-active');
             tab.classList.add('pl-tab-active');
             currentLeague = tab.getAttribute('data-league');
-            // Update header logo and title
-            const logo = document.getElementById('main-league-logo');
+            // Hide all main sections
+            document.querySelectorAll('main > section').forEach(sec => sec.style.display = 'none');
+            // Show correct section
             const title = document.getElementById('main-league-title');
-            logo.src = leagueLogos[currentLeague].src;
-            logo.alt = leagueLogos[currentLeague].alt;
-            // Clear the heading and set only the correct league name
-            title.textContent = '';
             title.textContent = leagueTitles[currentLeague];
-            document.getElementById('league-table').style.display = '';
-            document.getElementById('scores-container').innerHTML = '';
-            document.getElementById('last-goal-title').textContent = '';
-            document.getElementById('last-goal-container').innerHTML = '';
-            updateData();
+            if (currentLeague === 'LC') {
+                document.getElementById('league-cup-section').style.display = 'block';
+                document.getElementById('league-table').style.display = 'none';
+                document.getElementById('current-scores').style.display = 'none';
+                document.getElementById('last-goal').style.display = 'none';
+                fetchLeagueCupData();
+            } else {
+                document.getElementById('league-cup-section').style.display = 'none';
+                document.getElementById('current-scores').style.display = '';
+                document.getElementById('last-goal').style.display = '';
+                if (currentLeague === 'FAC' || currentLeague === 'LC') {
+                    document.getElementById('league-table').style.display = 'none';
+                } else {
+                    document.getElementById('league-table').style.display = '';
+                }
+                document.getElementById('scores-container').innerHTML = '';
+                document.getElementById('last-goal-title').textContent = '';
+                document.getElementById('last-goal-container').innerHTML = '';
+                updateData();
+            }
         });
     });
 });
@@ -307,8 +322,13 @@ async function fetchMatchDetails(fixtureId) {
         // Fetch lineups
         const lineupRes = await fetch(`https://premier-league-live-ish.onrender.com/api/lineups?fixture=${fixtureId}`);
         const lineupData = await lineupRes.json();
-        // Render details, pass matchObj as third arg
-        modalBody.innerHTML = renderMatchDetails(statsData, lineupData, arguments[1]);
+        // Render details, pass matchObj as third arg (always prefer matchObj for score)
+        let matchObj = arguments[1];
+        // If not passed, try to find from recent results/live/fixtures (for robustness)
+        if (!matchObj && window.lastEflCupMatches) {
+            matchObj = window.lastEflCupMatches.find(m => m.fixture && m.fixture.id === fixtureId);
+        }
+        modalBody.innerHTML = renderMatchDetails(statsData, lineupData, matchObj);
     } catch (e) {
         modalBody.innerHTML = '<p>Unable to load match details.</p>';
     }
@@ -331,11 +351,24 @@ function renderMatchDetails(statsData, lineupData) {
         return '<p>No stats or lineups available for this match.</p>';
     }
     const [homeStats, awayStats] = statsData.response;
-    // Use matchObj for score if available
+    // Use matchObj for score if available, else fallback to statsData (API-Football stats response includes goals)
     let homeScore = '?', awayScore = '?';
     if (arguments[2] && arguments[2].goals) {
         homeScore = arguments[2].goals.home != null ? arguments[2].goals.home : '?';
         awayScore = arguments[2].goals.away != null ? arguments[2].goals.away : '?';
+    } else if (statsData && statsData.response && statsData.response.length === 2) {
+        // Try to get goals from statsData
+        if (statsData.response[0].team && typeof statsData.response[0].goals === 'number') homeScore = statsData.response[0].goals;
+        if (statsData.response[1].team && typeof statsData.response[1].goals === 'number') awayScore = statsData.response[1].goals;
+        // If not present, try to parse from statistics (rare)
+        if (homeScore === '?' && statsData.response[0].statistics) {
+            const found = statsData.response[0].statistics.find(s => s.type === 'Goals');
+            if (found) homeScore = found.value;
+        }
+        if (awayScore === '?' && statsData.response[1].statistics) {
+            const found = statsData.response[1].statistics.find(s => s.type === 'Goals');
+            if (found) awayScore = found.value;
+        }
     }
     // Header row: team crests, names, score
     html += `<div class="pl-match-modal-header" style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#23242b 60%,#2d1b4d 100%);padding:18px 10px 10px 10px;border-radius:10px 10px 0 0;">
@@ -513,8 +546,8 @@ function displayLeagueTable(teams) {
 function updateData() {
     fetchLiveMatches();
     fetchLeagueTable();
-    // Always hide league table if FA Cup is selected
-    if (currentLeague === 'FAC') {
+    // Always hide league table if FA Cup or EFL Cup is selected
+    if (currentLeague === 'FAC' || currentLeague === 'LC') {
         document.getElementById('league-table').style.display = 'none';
     } else {
         document.getElementById('league-table').style.display = '';
@@ -525,3 +558,107 @@ function updateData() {
 updateData();
 // Set interval for real-time updates
 setInterval(updateData, 30000); // Update every 30 seconds
+
+// --- League Cup logic ---
+// Render live EFL Cup matches
+function renderLeagueCupLive(liveMatches) {
+    const el = document.getElementById('lc-live-list');
+    if (!liveMatches || liveMatches.length === 0) {
+        el.textContent = 'No live matches at the moment.';
+        return;
+    }
+    let html = '';
+    liveMatches.forEach(match => {
+        html += `<div class='match' style='cursor:pointer;background:#23242b;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:1.08em;' data-fixid='${match.fixture.id}'>`;
+        html += `<strong>${match.teams.home.name}</strong> vs <strong>${match.teams.away.name}</strong><br>`;
+        html += `<span style='font-size:1.1em;color:var(--accent-pink);'>${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}</span><br>`;
+        html += `<span style='font-size:0.98em;color:#ffe156;'>${match.fixture.status.long}</span>`;
+        html += `</div>`;
+    });
+    el.innerHTML = html;
+    // Add click for modal
+    el.querySelectorAll('div[data-fixid]').forEach(div => {
+        div.addEventListener('click', () => openMatchModal(Number(div.getAttribute('data-fixid'))));
+    });
+}
+async function fetchLeagueCupData() {
+    // Fetch all fixtures for League Cup
+    const leagueId = LEAGUE_IDS.LC;
+    try {
+        const response = await fetch(`https://premier-league-live-ish.onrender.com/api/matches?league=${leagueId}`);
+        const data = await response.json();
+        const fixtures = data.response || [];
+        // Upcoming: status 'NS', Results: status 'FT', Live: status '1H','2H','LIVE','ET','P','IN_PLAY'
+        const upcoming = fixtures.filter(f => f.fixture.status.short === 'NS');
+        const results = fixtures.filter(f => f.fixture.status.short === 'FT');
+        const live = fixtures.filter(f => ['1H','2H','LIVE','ET','P','IN_PLAY'].includes(f.fixture.status.short));
+        renderLeagueCupFixtures(upcoming);
+        renderLeagueCupResults(results);
+        renderLeagueCupLive(live);
+    } catch (e) {
+        document.getElementById('lc-fixtures-list').textContent = 'Unable to load fixtures.';
+        document.getElementById('lc-results-list').textContent = 'Unable to load results.';
+        document.getElementById('lc-live-list').textContent = 'Unable to load live scores.';
+    }
+}
+
+function renderLeagueCupResults(results) {
+    const el = document.getElementById('lc-results-list');
+    if (!results.length) {
+        el.textContent = 'No recent results.';
+        return;
+    }
+    // Group by match day (YYYY-MM-DD)
+    const grouped = {};
+    results.forEach(m => {
+        const date = m.fixture.date.slice(0, 10);
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(m);
+    });
+    // Show all matches from the most recent date(s) with finished matches
+    const dates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+    let html = '';
+    // Store for modal fallback
+    window.lastEflCupMatches = results;
+    dates.slice(0, 2).forEach(day => {
+        html += `<div class='pl-fixture-day' style='font-weight:bold;font-size:1.1em;margin:12px 0 8px 0;color:var(--accent-yellow);'>${new Date(day).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>`;
+        html += `<div style='display:grid;grid-template-columns:repeat(2,1fr);gap:16px;'>`;
+        grouped[day].forEach(match => {
+            html += `<div class='match compact-result' style='cursor:pointer;font-size:0.95em;padding:8px 10px;margin:0;min-width:0;background:#23242b;border-radius:8px;border:2px solid var(--accent-pink);box-shadow:0 0 0 2px #6c1aff33;' data-fixid='${match.fixture.id}'>
+                <strong>${match.teams.home.name}</strong> vs <strong>${match.teams.away.name}</strong><br>
+                <span style='font-size:1.1em;'>${match.teams.home.name} ${match.goals.home} - ${match.goals.away} ${match.teams.away.name}</span>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+    el.innerHTML = html;
+    // Add click for modal, pass match object for accurate score
+    el.querySelectorAll('div[data-fixid]').forEach(div => {
+        const match = results.find(m => m.fixture.id === Number(div.getAttribute('data-fixid')));
+        div.addEventListener('click', () => openMatchModal(Number(div.getAttribute('data-fixid')), match));
+    });
+}
+
+function renderLeagueCupFixtures(fixtures) {
+    const el = document.getElementById('lc-fixtures-list');
+    if (!fixtures.length) {
+        el.textContent = 'No upcoming fixtures.';
+        return;
+    }
+    // Group by match day (YYYY-MM-DD)
+    const grouped = {};
+    fixtures.forEach(fix => {
+        const date = fix.fixture.date.slice(0, 10);
+        if (!grouped[date]) grouped[date] = [];
+        grouped[date].push(fix);
+    });
+    const dates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
+    let html = '';
+    dates.slice(0, 2).forEach(day => {
+        html += `<div class='pl-fixture-day' style='font-weight:bold;font-size:1.1em;margin:12px 0 8px 0;color:var(--accent-blue);'>${new Date(day).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>`;
+        grouped[day].forEach(fix => {
+            html += `<div class='match' style='width:100%;background:#23242b;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:1.08em;'>${fix.teams.home.name} vs ${fix.teams.away.name} - ${new Date(fix.fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
+        });
+    });
+    el.innerHTML = html;
+}
